@@ -1,1 +1,10 @@
-# example_django_celery
+# Django + Celery. Шаблон
+
+## Суть
+
+Шаблон проекта для развёртывания Django сервера, с внешней бд (Postgres), кэшем (Redis) и очередью задач (Celery +
+Flower)
+
+## Запуск
+
+Чтобы запустить проект, нужно выполнить команду `docker compose up -d`
