@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_celery_beat',
+    'django_celery_results',
+    'tasks.apps.TasksConfig',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
@@ -80,6 +84,9 @@ DATABASES = {
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
         'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
         'PORT': os.environ.get('POSTGRES_PORT', '5432'),
+        'OPTIONS': {
+            'client_encoding': 'utf-8'
+        },
         'TIME_ZONE': os.environ.get('POSTGRES_TIME_ZONE', None),
         'CONN_MAX_AGE': os.environ.get('POSTGRES_CONN_MAX_AGE', None),
         'ATOMIC_REQUESTS': os.environ.get('POSTGRES_ATOMIC_REQUESTS', False),
@@ -124,3 +131,40 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Celery Configuration Options
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'django-cache'
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+CELERY_TIMEZONE = os.environ.get('DJANGO_TIME_ZONE', 'UTC')
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 5 * 60 * 60
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_RESULT_EXTENDED = True
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.environ.get('CASHES', "redis://localhost:6379/2"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
